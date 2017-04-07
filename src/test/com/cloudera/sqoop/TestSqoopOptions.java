@@ -20,33 +20,37 @@ package com.cloudera.sqoop;
 
 import java.util.Properties;
 
-import com.cloudera.sqoop.tool.BaseSqoopTool;
-import junit.framework.TestCase;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.sqoop.manager.oracle.OracleUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.cloudera.sqoop.lib.DelimiterSet;
-import com.cloudera.sqoop.tool.ImportTool;
 import com.cloudera.sqoop.testutil.HsqldbTestServer;
-import org.junit.Before;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import com.cloudera.sqoop.tool.BaseSqoopTool;
+import com.cloudera.sqoop.tool.ImportTool;
 
 import static org.apache.sqoop.Sqoop.SQOOP_RETHROW_PROPERTY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Test aspects of the SqoopOptions class.
  */
-@RunWith(JUnit4.class)
-public class TestSqoopOptions extends TestCase {
+public class TestSqoopOptions {
 
   private Properties originalSystemProperties;
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Before
   public void setup() {
@@ -66,22 +70,16 @@ public class TestSqoopOptions extends TestCase {
 
   @Test
   public void testEmptyString() throws Exception {
-    try {
-      SqoopOptions.toChar("");
-      fail("Expected exception");
-    } catch (SqoopOptions.InvalidOptionsException ioe) {
-      // expect this.
-    }
+    thrown.expect(SqoopOptions.InvalidOptionsException.class);
+    thrown.reportMissingExceptionWithMessage("Expected InvalidOptionsException on empty string");
+    SqoopOptions.toChar("");
   }
 
   @Test
   public void testNullString() throws Exception {
-    try {
-      SqoopOptions.toChar(null);
-      fail("Expected exception");
-    } catch (SqoopOptions.InvalidOptionsException ioe) {
-      // expect this.
-    }
+    thrown.expect(SqoopOptions.InvalidOptionsException.class);
+    thrown.reportMissingExceptionWithMessage("Expected InvalidOptionsException on null string");
+    SqoopOptions.toChar(null);
   }
 
   @Test
@@ -134,22 +132,16 @@ public class TestSqoopOptions extends TestCase {
 
   @Test
   public void testUnknownEscape1() throws Exception {
-    try {
-      SqoopOptions.toChar("\\Q");
-      fail("Expected exception");
-    } catch (SqoopOptions.InvalidOptionsException ioe) {
-      // expect this.
-    }
+    thrown.expect(SqoopOptions.InvalidOptionsException.class);
+    thrown.reportMissingExceptionWithMessage("Expected InvalidOptionsException on unknown escaping");
+    SqoopOptions.toChar("\\Q");
   }
 
   @Test
   public void testUnknownEscape2() throws Exception {
-    try {
-      SqoopOptions.toChar("\\nn");
-      fail("Expected exception");
-    } catch (SqoopOptions.InvalidOptionsException ioe) {
-      // expect this.
-    }
+    thrown.expect(SqoopOptions.InvalidOptionsException.class);
+    thrown.reportMissingExceptionWithMessage("Expected InvalidOptionsException on unknown escaping");
+    SqoopOptions.toChar("\\nn");
   }
 
   @Test
@@ -184,22 +176,16 @@ public class TestSqoopOptions extends TestCase {
 
   @Test
   public void testErrOctalChar() throws Exception {
-    try {
-      SqoopOptions.toChar("\\095");
-      fail("Expected exception");
-    } catch (NumberFormatException nfe) {
-      // expected.
-    }
+    thrown.expect(NumberFormatException.class);
+    thrown.reportMissingExceptionWithMessage("Expected NumberFormatException on erroneous octal char");
+    SqoopOptions.toChar("\\095");
   }
 
   @Test
   public void testErrHexChar() throws Exception {
-    try {
-      SqoopOptions.toChar("\\0x9K5");
-      fail("Expected exception");
-    } catch (NumberFormatException nfe) {
-      // expected.
-    }
+    thrown.expect(NumberFormatException.class);
+    thrown.reportMissingExceptionWithMessage("Expected NumberFormatException on erroneous hex char");
+    SqoopOptions.toChar("\\0x9K5");
   }
 
   private SqoopOptions parse(String [] argv) throws Exception {
@@ -258,12 +244,9 @@ public class TestSqoopOptions extends TestCase {
       "x",
     };
 
-    try {
-      parse(args);
-      fail("Expected InvalidOptionsException");
-    } catch (SqoopOptions.InvalidOptionsException ioe) {
-      // expected.
-    }
+    thrown.expect(SqoopOptions.InvalidOptionsException.class);
+    thrown.reportMissingExceptionWithMessage("Expected InvalidOptionsException on invalid --num-mappers argument");
+    parse(args);
   }
 
   @Test
@@ -273,12 +256,9 @@ public class TestSqoopOptions extends TestCase {
       "x",
     };
 
-    try {
-      parse(args);
-      fail("Expected InvalidOptionsException");
-    } catch (SqoopOptions.InvalidOptionsException ioe) {
-      // expected.
-    }
+    thrown.expect(SqoopOptions.InvalidOptionsException.class);
+    thrown.reportMissingExceptionWithMessage("Expected InvalidOptionsException on invalid -m argument");
+    parse(args);
   }
 
   @Test
@@ -719,12 +699,11 @@ public class TestSqoopOptions extends TestCase {
       "--append",
       "--delete-target-dir",
     };
-    try {
-      validateImportOptions(extraArgs);
-      fail("Expected InvalidOptionsException");
-    } catch(SqoopOptions.InvalidOptionsException ioe) {
-      // Expected
-    }
+
+    thrown.expect(SqoopOptions.InvalidOptionsException.class);
+    thrown.reportMissingExceptionWithMessage("Expected InvalidOptionsException on incompatibility of " +
+        "--delete-target-dir and --append");
+    validateImportOptions(extraArgs);
   }
 
   //test incompatability of --delete-target-dir with incremental import
@@ -734,12 +713,11 @@ public class TestSqoopOptions extends TestCase {
       "--incremental", "append",
       "--delete-target-dir",
     };
-    try {
-      validateImportOptions(extraArgs);
-      fail("Expected InvalidOptionsException");
-    } catch(SqoopOptions.InvalidOptionsException ioe) {
-      // Expected
-    }
+
+    thrown.expect(SqoopOptions.InvalidOptionsException.class);
+    thrown.reportMissingExceptionWithMessage("Expected InvalidOptionsException on incompatibility of " +
+        "--delete-target-dir and --incremental");
+    validateImportOptions(extraArgs);
   }
 
   // test that hbase bulk load import with table name and target dir
@@ -761,12 +739,10 @@ public class TestSqoopOptions extends TestCase {
     String [] extraArgs = {
         longArgument(BaseSqoopTool.HBASE_BULK_LOAD_ENABLED_ARG),
         longArgument(BaseSqoopTool.TARGET_DIR_ARG), "./test"};
-    try {
-      validateImportOptions(extraArgs);
-      fail("Expected InvalidOptionsException");
-    } catch (SqoopOptions.InvalidOptionsException ioe) {
-      // Expected
-    }
+
+    thrown.expect(SqoopOptions.InvalidOptionsException.class);
+    thrown.reportMissingExceptionWithMessage("Expected InvalidOptionsException because of missing --hbase-table");
+    validateImportOptions(extraArgs);
   }
 
   private static String longArgument(String argument) {
@@ -796,11 +772,26 @@ public class TestSqoopOptions extends TestCase {
       "--split-by",
       "col0",
     };
-    try {
-      validateImportOptions(extraArgs);
-      fail("Expected InvalidOptionsException");
-    } catch (SqoopOptions.InvalidOptionsException ioe) {
-      // Expected
-    }
+
+    thrown.expect(SqoopOptions.InvalidOptionsException.class);
+    thrown.reportMissingExceptionWithMessage("Expected Exception on incompatibility of " +
+        "--autoreset-to-one-mapper and --split-by");
+    validateImportOptions(extraArgs);
   }
+
+  @Test
+  public void testEscapeMapingColumnNames() throws Exception {
+    SqoopOptions opts = new SqoopOptions();
+    // enabled by default
+    assertTrue(opts.getEscapeMappingColumnNamesEnabled());
+
+    String [] args = {
+        "--" + org.apache.sqoop.tool.BaseSqoopTool.ESCAPE_MAPPING_COLUMN_NAMES_ENABLED,
+        "false",
+    };
+
+    opts = parse(args);
+    assertFalse(opts.getEscapeMappingColumnNamesEnabled());
+  }
+
 }
