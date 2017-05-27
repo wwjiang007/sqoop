@@ -224,6 +224,9 @@
   <property name="sqoop.test.sqlserver.connectstring.host_url"
             value="jdbc:sqlserver://sqlserverhost:1433"/>
 
+  <property name="sqoop.test.sqlserver.database"
+            value="sqooptest"/>
+
   <property name="java.security.krb5.realm"
             value="OX.AC.UK"/>
 
@@ -740,7 +743,7 @@
       <sysproperty key="test.build.data" value="${build.test}/data"/>
       <sysproperty key="build.test" value="${build.test}"/>
 
-      <!-- microsoft sqlserver manual test related properties-->
+      <!-- microsoft sqlserver thirdparty test related properties-->
       <sysproperty key="test.data.dir" value="${basedir}/testdata"/>
       <sysproperty key="ms.datatype.test.data.file.export" value="DatatypeTestData-export-lite.txt"/>
       <sysproperty key="ms.datatype.test.data.file.import" value="DatatypeTestData-import-lite.txt"/>
@@ -849,6 +852,9 @@
 
       <sysproperty key="sqoop.test.sqlserver.connectstring.host_url"
                    value="${sqoop.test.sqlserver.connectstring.host_url}"/>
+
+      <sysproperty key="sqoop.test.sqlserver.database"
+                   value="${sqoop.test.sqlserver.database}"/>
 
       <sysproperty key="sqoop.test.msserver.connector.factory"
                    value="${sqoop.test.msserver.connector.factory}"/>
