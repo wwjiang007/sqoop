@@ -90,7 +90,7 @@ Available jobs:
   myjob
 ----
 
-We can inspect the configuration of a job with the +show+ action:
+We can inspect the configuration of a job with the +show+ action. As you can see in the below example even if the password is stored in the metastore the +show+ action will redact its value in the output:
 
 ----
  $ sqoop job --show myjob
@@ -102,6 +102,7 @@ We can inspect the configuration of a job with the +show+ action:
  codegen.input.delimiters.record = 0
  hdfs.append.dir = false
  db.table = mytable
+ db.password = ********
  ...
 ----
 
@@ -131,6 +132,8 @@ Argument                     Description
 -----------------------------------------------------------------------
 +\--meta-connect <jdbc-uri>+ Specifies the JDBC connect string used \
                              to connect to the metastore
++\--meta-username <username>+    Specifies the username for the metastore database
++\--meta-password <password>+    Specifies the password for the metastore database
 -----------------------------------------------------------------------
 
 By default, a private metastore is instantiated in +$HOME/.sqoop+. If
@@ -147,6 +150,15 @@ filesystem other than your home directory.
 
 If you configure +sqoop.metastore.client.enable.autoconnect+ with the
 value +false+, then you must explicitly supply +\--meta-connect+.
+
+Job data can be stored in MySql, PostgreSql, DB2, SqlServer, and Oracle with
+the +\--meta-connect+ argument. The +\--meta-username+ and +\--meta-password+ arguments are necessary
+if the database containing the saved jobs requires a username and password.
+
+----
+$ sqoop job --exec myjob --meta-connect jdbc:hsqldb:hsql://localhost:3000/ --meta-username *username* --meta-password *password*
+
+----
 
 .Common options:
 [grid="all"]
@@ -229,7 +241,7 @@ The metastore is available over TCP/IP. The port is controlled by the
 
 Clients should connect to the metastore by specifying
 +sqoop.metastore.client.autoconnect.url+ or +\--meta-connect+ with the
-value +jdbc:hsqldb:hsql://<server-name>:<port>/sqoop+. For example,
+JDBC-URI string. For example,
 +jdbc:hsqldb:hsql://metaserver.example.com:16000/sqoop+.
 
 This metastore may be hosted on a machine within the Hadoop cluster, or

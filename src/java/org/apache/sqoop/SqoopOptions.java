@@ -35,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.sqoop.accumulo.AccumuloConstants;
 import org.apache.sqoop.mapreduce.mainframe.MainframeConfiguration;
+import org.apache.sqoop.metastore.GenericJobStorage;
 import org.apache.sqoop.tool.BaseSqoopTool;
 import org.apache.sqoop.util.CredentialsUtil;
 import org.apache.sqoop.util.LoggingUtils;
@@ -80,6 +81,8 @@ public class SqoopOptions implements Cloneable {
   public static final String DEF_HCAT_HOME_OLD = "/usr/lib/hcatalog";
 
   public static final boolean METASTORE_PASSWORD_DEFAULT = false;
+  public static final String DB_PASSWORD_KEY = "db.password";
+
   /**
    * Thrown when invalid cmdline options are given.
    */
@@ -390,6 +393,10 @@ public class SqoopOptions implements Cloneable {
 
   @StoredAsProperty(ORACLE_ESCAPING_DISABLED)
   private boolean oracleEscapingDisabled;
+
+  private String metaConnectStr;
+  private String metaUsername;
+  private String metaPassword;
 
   public SqoopOptions() {
     initDefaults(null);
@@ -743,7 +750,7 @@ public class SqoopOptions implements Cloneable {
       // Require that the user enter it now.
       setPasswordFromConsole();
     } else {
-      this.password = props.getProperty("db.password", this.password);
+      this.password = props.getProperty(DB_PASSWORD_KEY, this.password);
     }
   }
 
@@ -827,7 +834,7 @@ public class SqoopOptions implements Cloneable {
     if (this.getConf().getBoolean(
       METASTORE_PASSWORD_KEY, METASTORE_PASSWORD_DEFAULT)) {
       // If the user specifies, we may store the password in the metastore.
-      putProperty(props, "db.password", this.password);
+      putProperty(props, DB_PASSWORD_KEY, this.password);
       putProperty(props, "db.require.password", "false");
     } else if (this.password != null) {
       // Otherwise, if the user has set a password, we just record
@@ -1076,6 +1083,25 @@ public class SqoopOptions implements Cloneable {
 
     // set escape column mapping to true
     this.escapeColumnMappingEnabled = true;
+
+    this.metaConnectStr =
+            System.getProperty(GenericJobStorage.AUTO_STORAGE_CONNECT_STRING_KEY, getLocalAutoConnectString());
+    this.metaUsername =
+            System.getProperty(GenericJobStorage.AUTO_STORAGE_USER_KEY, GenericJobStorage.DEFAULT_AUTO_USER);
+    this.metaPassword =
+            System.getProperty(GenericJobStorage.AUTO_STORAGE_PASS_KEY, GenericJobStorage.DEFAULT_AUTO_PASSWORD);
+  }
+
+  private String getLocalAutoConnectString() {
+    String homeDir = System.getProperty("user.home");
+
+    File homeDirObj = new File(homeDir);
+    File sqoopDataDirObj = new File(homeDirObj, ".sqoop");
+    File databaseFileObj = new File(sqoopDataDirObj, "metastore.db");
+
+    String dbFileStr = databaseFileObj.toString();
+    return "jdbc:hsqldb:file:" + dbFileStr
+            + ";hsqldb.write_delay=false;shutdown=true";
   }
 
   /**
@@ -2787,5 +2813,15 @@ public class SqoopOptions implements Cloneable {
     }
 
 
+  public String getMetaConnectStr() {
+    return metaConnectStr;
+  }
+  public String getMetaUsername() {
+    return metaUsername;
+  }
+
+  public String getMetaPassword() {
+    return metaPassword;
+  }
 }
 
