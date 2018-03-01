@@ -18,9 +18,9 @@
 
 package org.apache.sqoop.hbase;
 
-import com.cloudera.sqoop.lib.FieldMapProcessor;
-import com.cloudera.sqoop.lib.FieldMappable;
-import com.cloudera.sqoop.lib.ProcessingException;
+import org.apache.sqoop.lib.FieldMapProcessor;
+import org.apache.sqoop.lib.FieldMappable;
+import org.apache.sqoop.lib.ProcessingException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configurable;
@@ -62,6 +62,8 @@ public class HBasePutProcessor implements Closeable, Configurable,
    */
   public static final String ROW_KEY_COLUMN_KEY =
       "sqoop.hbase.insert.row.key.column";
+
+  public static final String NULL_INCREMENTAL_MODE = "hbase.null.incremental.mode";
 
   /**
    * Configuration key specifying the PutTransformer implementation to use.

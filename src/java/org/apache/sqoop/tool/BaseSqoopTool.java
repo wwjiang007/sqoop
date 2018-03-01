@@ -33,20 +33,21 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.sqoop.manager.SupportedManagers;
 import org.apache.sqoop.mapreduce.hcat.SqoopHCatUtilities;
 import org.apache.sqoop.util.CredentialsUtil;
 import org.apache.sqoop.util.LoggingUtils;
 import org.apache.sqoop.util.password.CredentialProviderHelper;
 
-import com.cloudera.sqoop.ConnFactory;
-import com.cloudera.sqoop.SqoopOptions;
-import com.cloudera.sqoop.SqoopOptions.IncrementalMode;
-import com.cloudera.sqoop.SqoopOptions.InvalidOptionsException;
-import com.cloudera.sqoop.cli.RelatedOptions;
-import com.cloudera.sqoop.cli.ToolOptions;
-import com.cloudera.sqoop.lib.DelimiterSet;
-import com.cloudera.sqoop.manager.ConnManager;
-import com.cloudera.sqoop.metastore.JobData;
+import org.apache.sqoop.ConnFactory;
+import org.apache.sqoop.SqoopOptions;
+import org.apache.sqoop.SqoopOptions.IncrementalMode;
+import org.apache.sqoop.SqoopOptions.InvalidOptionsException;
+import org.apache.sqoop.cli.RelatedOptions;
+import org.apache.sqoop.cli.ToolOptions;
+import org.apache.sqoop.lib.DelimiterSet;
+import org.apache.sqoop.manager.ConnManager;
+import org.apache.sqoop.metastore.JobData;
 
 /**
  * Layer on top of SqoopTool that provides some basic common code
@@ -55,7 +56,7 @@ import com.cloudera.sqoop.metastore.JobData;
  * Subclasses should call init() at the top of their run() method,
  * and call destroy() at the end in a finally block.
  */
-public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
+public abstract class BaseSqoopTool extends org.apache.sqoop.tool.SqoopTool {
 
   public static final String METADATA_TRANSACTION_ISOLATION_LEVEL = "metadata-transaction-isolation-level";
 
@@ -198,6 +199,7 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
   public static final String HBASE_BULK_LOAD_ENABLED_ARG =
       "hbase-bulkload";
   public static final String HBASE_CREATE_TABLE_ARG = "hbase-create-table";
+  public static final String HBASE_NULL_INCREMENTAL_MODE_ARG = "hbase-null-incremental-mode";
 
   //Accumulo arguments.
   public static final String ACCUMULO_TABLE_ARG = "accumulo-table";
@@ -852,6 +854,11 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
         .withDescription("If specified, create missing HBase tables")
         .withLongOpt(HBASE_CREATE_TABLE_ARG)
         .create());
+    hbaseOpts.addOption(OptionBuilder.withArgName("nullmode")
+        .hasArg()
+        .withDescription("How to handle null values during incremental import into HBase.")
+        .withLongOpt(HBASE_NULL_INCREMENTAL_MODE_ARG)
+        .create());
 
     return hbaseOpts;
   }
@@ -1397,7 +1404,7 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
     }
   }
 
-  protected void applyHBaseOptions(CommandLine in, SqoopOptions out) {
+  protected void applyHBaseOptions(CommandLine in, SqoopOptions out) throws InvalidOptionsException {
     if (in.hasOption(HBASE_TABLE_ARG)) {
       out.setHBaseTable(in.getOptionValue(HBASE_TABLE_ARG));
     }
@@ -1414,6 +1421,19 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
 
     if (in.hasOption(HBASE_CREATE_TABLE_ARG)) {
       out.setCreateHBaseTable(true);
+    }
+
+    if (in.hasOption(HBASE_NULL_INCREMENTAL_MODE_ARG)) {
+      String nullMode = in.getOptionValue(HBASE_NULL_INCREMENTAL_MODE_ARG);
+      if ("ignore".equals(nullMode)) {
+        out.setHbaseNullIncrementalMode(SqoopOptions.HBaseNullIncrementalMode.Ignore);
+      } else if ("delete".equals(nullMode)) {
+        out.setHbaseNullIncrementalMode(SqoopOptions.HBaseNullIncrementalMode.Delete);
+      } else {
+        throw new InvalidOptionsException("Unknown HBase null incremental mode: "
+            + nullMode + ". Use 'ignore' or 'delete'."
+            + HELP_STR);
+      }
     }
   }
 
@@ -1822,6 +1842,14 @@ public abstract class BaseSqoopTool extends com.cloudera.sqoop.tool.SqoopTool {
     }
 
     return dashPos;
+  }
+
+  protected void validateHasDirectConnectorOption(SqoopOptions options) throws SqoopOptions.InvalidOptionsException {
+    SupportedManagers m = SupportedManagers.createFrom(options);
+    if (m != null && options.isDirect() && !m.hasDirectConnector()) {
+      throw new SqoopOptions.InvalidOptionsException(
+          "Was called with the --direct option, but no direct connector available.");
+    }
   }
 }
 

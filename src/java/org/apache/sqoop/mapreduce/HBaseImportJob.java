@@ -40,14 +40,13 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.OutputFormat;
-import com.cloudera.sqoop.SqoopOptions;
-import com.cloudera.sqoop.hbase.HBasePutProcessor;
-import com.cloudera.sqoop.lib.FieldMapProcessor;
-import com.cloudera.sqoop.lib.SqoopRecord;
-import com.cloudera.sqoop.manager.ConnManager;
-import com.cloudera.sqoop.manager.ImportJobContext;
-import com.cloudera.sqoop.mapreduce.DataDrivenImportJob;
-import com.cloudera.sqoop.util.ImportException;
+import org.apache.sqoop.SqoopOptions;
+import org.apache.sqoop.hbase.HBasePutProcessor;
+import org.apache.sqoop.lib.FieldMapProcessor;
+import org.apache.sqoop.lib.SqoopRecord;
+import org.apache.sqoop.manager.ConnManager;
+import org.apache.sqoop.manager.ImportJobContext;
+import org.apache.sqoop.util.ImportException;
 
 /**
  * Runs an HBase import via DataDrivenDBInputFormat to the HBasePutProcessor
@@ -94,9 +93,10 @@ public class HBaseImportJob extends DataDrivenImportJob {
         HBasePutProcessor.class,
         FieldMapProcessor.class);
 
-    // Set the HBase parameters (table, column family, row key):
+    // Set the HBase parameters (table, column family, row key, null mode):
     conf.set(HBasePutProcessor.TABLE_NAME_KEY, options.getHBaseTable());
     conf.set(HBasePutProcessor.COL_FAMILY_KEY, options.getHBaseColFamily());
+    conf.set(HBasePutProcessor.NULL_INCREMENTAL_MODE, options.getHbaseNullIncrementalMode().toString());
 
     // What column of the input becomes the row key?
     String rowKeyCol = options.getHBaseRowKeyColumn();
