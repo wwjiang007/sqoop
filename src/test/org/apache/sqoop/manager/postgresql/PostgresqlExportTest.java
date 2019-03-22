@@ -17,7 +17,12 @@
  */
 package org.apache.sqoop.manager.postgresql;
 
+import static org.apache.sqoop.manager.postgresql.PostgresqlTestUtil.CONNECT_STRING;
+import static org.apache.sqoop.manager.postgresql.PostgresqlTestUtil.DATABASE_USER;
+import static org.apache.sqoop.manager.postgresql.PostgresqlTestUtil.PASSWORD;
+
 import org.apache.sqoop.SqoopOptions;
+import org.apache.sqoop.testcategories.thirdpartytest.PostgresqlTest;
 import org.apache.sqoop.testutil.CommonArgs;
 import org.apache.sqoop.testutil.ExportJobTestCase;
 import org.apache.commons.logging.Log;
@@ -26,6 +31,7 @@ import org.apache.sqoop.manager.ConnManager;
 import org.apache.sqoop.manager.PostgresqlManager;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -45,28 +51,16 @@ import static org.junit.Assert.fail;
 /**
  *
  */
+@Category(PostgresqlTest.class)
 public class PostgresqlExportTest extends ExportJobTestCase {
   public static final Log LOG = LogFactory.getLog(
       PostgresqlExportTest.class.getName());
-
-  static final String HOST_URL = System.getProperty(
-    "sqoop.test.postgresql.connectstring.host_url",
-    "jdbc:postgresql://localhost/");
-  static final String DATABASE_USER = System.getProperty(
-    "sqoop.test.postgresql.username",
-    "sqooptest");
-  static final String DATABASE_NAME = System.getProperty(
-    "sqoop.test.postgresql.database",
-    "sqooptest");
-  static final String PASSWORD = System.getProperty(
-    "sqoop.test.postgresql.password");
 
   static final String TABLE_NAME = "EMPLOYEES_PG";
   static final String PROCEDURE_NAME = "INSERT_AN_EMPLOYEE";
   static final String STAGING_TABLE_NAME = "STAGING";
   static final String SCHEMA_PUBLIC = "public";
   static final String SCHEMA_SPECIAL = "special";
-  static final String CONNECT_STRING = HOST_URL + DATABASE_NAME;
 
   protected Connection connection;
 

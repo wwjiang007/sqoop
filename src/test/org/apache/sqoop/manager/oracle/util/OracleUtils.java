@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.apache.sqoop.SqoopOptions;
 import org.apache.sqoop.manager.ConnManager;
+import org.apache.sqoop.testutil.SqlUtil;
 
 /**
  * Helper methods for Oracle testing.
@@ -35,12 +36,13 @@ public final class OracleUtils {
 
   public static final Log LOG = LogFactory.getLog(OracleUtils.class.getName());
 
-  // Express edition hardcoded name.
-  public static final String ORACLE_DATABASE_NAME = "xe";
+  public static final String CONNECT_STRING = System.getProperty("sqoop.test.oracle.connectstring", "jdbc:oracle:thin:@//localhost:1521/xe");
+  public static final String ORACLE_USER_NAME = System.getProperty("sqoop.test.oracle.username", "SYSTEM");
+  public static final String ORACLE_USER_PASS = System.getProperty("sqoop.test.oracle.password", "oracle");
 
-  public static final String CONNECT_STRING = System.getProperty("sqoop.test.oracle.connectstring", "jdbc:oracle:thin:@//localhost/" + ORACLE_DATABASE_NAME);
-  public static final String ORACLE_USER_NAME = System.getProperty("sqoop.test.oracle.username", "SQOOPTEST");
-  public static final String ORACLE_USER_PASS = System.getProperty("sqoop.test.oracle.password", "12345");
+  public static final String EE_CONNECT_STRING = System.getProperty("sqoop.test.oracle-ee.connectstring", "jdbc:oracle:thin:@//localhost:1522/sqoop");
+  public static final String ORACLE_EE_USER_NAME = System.getProperty("sqoop.test.oracle-ee.username", "SYSTEM");
+  public static final String ORACLE_EE_USER_PASS = System.getProperty("sqoop.test.oracle-ee.password", "Sqoop12345");
 
   public static final String ORACLE_SECONDARY_USER_NAME = "SQOOPTEST2";
   public static final String ORACLE_SECONDARY_USER_PASS = "ABCDEF";
@@ -51,9 +53,6 @@ public final class OracleUtils {
   public static final int INTEGRATIONTEST_NUM_ROWS = 10000;
   // Number of mappers if wanting to override default setting
   public static final int NUM_MAPPERS = 0;
-  // Oracle degree of parallelism to use when creating table.
-  // If 0 we will calculate a recommended value
-  public static final int ORACLE_PARALLEL_DEGREE = 0;
 
   private OracleUtils() { }
 
@@ -69,7 +68,9 @@ public final class OracleUtils {
 
   /**
    * Drop a table if it exists.
+   * Use the executeStatement method in {@link SqlUtil} instead.
    */
+  @Deprecated
   public static void dropTable(String tableName, ConnManager manager)
       throws SQLException {
     Connection connection = null;
@@ -99,4 +100,5 @@ public final class OracleUtils {
     return "BEGIN EXECUTE IMMEDIATE 'DROP TABLE " + tableName + "'; "
         + "exception when others then null; end;";
   }
+
 }

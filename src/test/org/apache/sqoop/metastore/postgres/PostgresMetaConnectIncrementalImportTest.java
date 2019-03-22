@@ -18,7 +18,13 @@
 
 package org.apache.sqoop.metastore.postgres;
 
+import static org.apache.sqoop.manager.postgresql.PostgresqlTestUtil.CONNECT_STRING;
+import static org.apache.sqoop.manager.postgresql.PostgresqlTestUtil.DATABASE_USER;
+import static org.apache.sqoop.manager.postgresql.PostgresqlTestUtil.PASSWORD;
+
 import org.apache.sqoop.metastore.MetaConnectIncrementalImportTestBase;
+import org.apache.sqoop.testcategories.thirdpartytest.PostgresqlTest;
+import org.junit.experimental.categories.Category;
 
 /**
  * Test that Incremental-Import values are stored correctly in PostgreSQL
@@ -35,17 +41,8 @@ import org.apache.sqoop.metastore.MetaConnectIncrementalImportTestBase;
  *   -Dsqoop.test.postgresql.connectstring.host_url, -Dsqoop.test.postgresql.database,
  *   -Dsqoop.test.postgresql.username and -Dsqoop.test.postgresql.password respectively
  */
-
+@Category(PostgresqlTest.class)
 public class PostgresMetaConnectIncrementalImportTest extends MetaConnectIncrementalImportTestBase {
-
-    private static final String HOST_URL = System.getProperty("sqoop.test.postgresql.connectstring.host_url",
-        "jdbc:postgresql://localhost/");
-    private static final String DATABASE_USER = System.getProperty(
-        "sqoop.test.postgresql.username", "sqooptest");
-    private static final String DATABASE_NAME = System.getProperty(
-        "sqoop.test.postgresql.database", "sqooptest");
-    private static final String PASSWORD = System.getProperty("sqoop.test.postgresql.password");
-    private static final String CONNECT_STRING = HOST_URL + DATABASE_NAME;
 
     public PostgresMetaConnectIncrementalImportTest() {
         super(CONNECT_STRING, DATABASE_USER, PASSWORD);

@@ -19,6 +19,7 @@ package org.apache.sqoop.manager.sqlserver;
 
 import org.apache.sqoop.ConnFactory;
 import org.apache.sqoop.SqoopOptions;
+import org.apache.sqoop.testcategories.thirdpartytest.SqlServerTest;
 import org.apache.sqoop.testutil.CommonArgs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,6 +29,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -40,29 +42,21 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import static org.apache.sqoop.manager.sqlserver.MSSQLTestUtils.DATABASE_NAME;
+import static org.apache.sqoop.manager.sqlserver.MSSQLTestUtils.DATABASE_USER;
+import static org.apache.sqoop.manager.sqlserver.MSSQLTestUtils.DATABASE_PASSWORD;
+import static org.apache.sqoop.manager.sqlserver.MSSQLTestUtils.HOST_URL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
  * Please see instructions in SQLServerManagerImportTest.
  */
+@Category(SqlServerTest.class)
 public class SQLServerManagerExportTest extends ExportJobTestCase {
 
     public static final Log LOG = LogFactory.getLog(
       SQLServerManagerExportTest.class.getName());
-
-  static final String HOST_URL = System.getProperty(
-          "sqoop.test.sqlserver.connectstring.host_url",
-          "jdbc:sqlserver://sqlserverhost:1433");
-  static final String DATABASE_NAME = System.getProperty(
-      "sqoop.test.sqlserver.database",
-      "sqooptest");
-  static final String DATABASE_USER = System.getProperty(
-      "ms.sqlserver.username",
-      "sqoopuser");
-  static final String DATABASE_PASSWORD = System.getProperty(
-      "ms.sqlserver.password",
-      "password");
 
   static final String SCHEMA_DBO = "dbo";
   static final String DBO_TABLE_NAME = "EMPLOYEES_MSSQL";

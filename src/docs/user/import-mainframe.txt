@@ -49,6 +49,7 @@ Argument                          Description
 +\--as-sequencefile+              Imports data to SequenceFiles
 +\--as-textfile+                  Imports data as plain text (default)
 +\--as-parquetfile+               Imports data to Parquet Files
++\--as-binaryfile+                Imports data as binary files
 +\--delete-target-dir+            Delete the import target directory\
                                   if it exists
 +-m,\--num-mappers <n>+           Use 'n' map tasks to import in parallel
@@ -193,6 +194,40 @@ $ sqoop import-mainframe --dataset SomePDS --jar-file mydatatypes.jar \
 
 This command will load the +SomePDSType+ class out of +mydatatypes.jar+.
 
+Support for Generation Data Group and Sequential data sets.
+This can be specified with the --datasettype option followed by one of:
+'p' for partitioned dataset (default)
+'g' for generation data group dataset
+'s' for sequential dataset
+
+In the case of generation data group datasets, Sqoop will retrieve just the last or
+latest file (or generation).
+
+In the case of sequential datasets, Sqoop will retrieve just the file specified.
+
+Support of datasets that are stored on tape volumes by specifying --tape true.
+
+By default, mainframe datasets are assumed to be plain text. Attempting to transfer
+binary datasets using this method will result in data corruption.
+Support for binary datasets by specifying --as-binaryfile and optionally --buffersize followed by
+buffer size specified in bytes. By default, --buffersize is set to 32760 bytes. Altering buffersize
+will alter the number of records Sqoop reports to have imported. This is because it reads the
+binary dataset in chunks specified by buffersize. Larger buffer size means lower number of records.
+
+Use the +\--ftp-commands+ with a comma separated list of commands to send custom FTP commands prior to
+file retrieval. This is useful for letting the mainframe know to embed data into the binary files
+like Record Descriptor Words for variable length records so downstream processes can separate each
+record. The mainframe will otherwise discard this metadata in the file transmission.
+
+NOTE: The responses from the mainframe of these commands are logged ONLY. It is up to the user to check
+for errors responses from the mainframe.
+
+----
+$ sqoop import-mainframe -D hadoop.security.credential.provider.path=jceks://file/my/folder/mainframe.jceks \
+  --connect <host> --username user1 --password-alias alias1 --dataset SomeDS --tape true \
+  --as-binaryfile --datasettype g --ftp-commands "SITE RDW,SITE RDW READTAPEFORMAT=V"
+----
+
 Additional Import Configuration Properties
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 There are some additional properties which can be configured by modifying
@@ -226,6 +261,23 @@ A basic import of all sequential files in a partitioned dataset named
 $ sqoop import-mainframe --connect z390 --dataset EMPLOYEES \
     --username SomeUser -P
 Enter password: (hidden)
+----
+
+Import of a tape based generation data group dataset using a password alias and writing out to
+an intermediate directory (--outdir) before moving it to (--target-dir).
+----
+$ sqoop import-mainframe --dataset SomeGdg --connect <host> --username myuser --password-alias \
+    mypasswordalias --datasettype g --tape true --outdir /tmp/imported/sqoop \
+    --target-dir /data/imported/mainframe/SomeGdg
+----
+
+Import of a tape based binary generation data group dataset with a buffer size of 64000 using a
+password alias and writing out to an intermediate directory (--outdir) before moving it
+to (--target-dir).
+----
+$ sqoop import-mainframe --dataset SomeGdg --connect <host> --username myuser --password-alias \
+    mypasswordalias --datasettype g --tape true --as-binaryfile --buffersize 64000 --outdir /tmp/imported/sqoop \
+    --target-dir /data/imported/mainframe/SomeGdg
 ----
 
 Controlling the import parallelism (using 8 parallel tasks):

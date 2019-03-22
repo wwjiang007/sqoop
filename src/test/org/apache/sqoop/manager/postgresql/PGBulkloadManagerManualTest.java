@@ -18,6 +18,9 @@
 
 package org.apache.sqoop.manager.postgresql;
 
+import static org.apache.sqoop.manager.postgresql.PostgresqlTestUtil.CONNECT_STRING;
+import static org.apache.sqoop.manager.postgresql.PostgresqlTestUtil.DATABASE_USER;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -28,10 +31,13 @@ import java.util.Arrays;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.sqoop.testcategories.sqooptest.ManualTest;
+import org.apache.sqoop.testcategories.thirdpartytest.PostgresqlTest;
 import org.junit.Test;
 
 import org.apache.sqoop.TestExport;
 import org.apache.sqoop.mapreduce.db.DBConfiguration;
+import org.junit.experimental.categories.Category;
 
 
 /**
@@ -62,23 +68,16 @@ import org.apache.sqoop.mapreduce.db.DBConfiguration;
  * sqooptest=# \q
  *
  */
+@Category({ManualTest.class, PostgresqlTest.class})
 public class PGBulkloadManagerManualTest extends TestExport {
 
   public static final Log LOG =
       LogFactory.getLog(PGBulkloadManagerManualTest.class.getName());
   private DBConfiguration dbConf;
-  static final String HOST_URL =
-    System.getProperty("sqoop.test.postgresql.connectstring.host_url",
-                       "jdbc:postgresql://localhost/");
-  static final String DATABASE =
-    System.getProperty("sqoop.test.postgresql.database", "sqooptest");
   static final String TABLESPACE =
-    System.getProperty("sqoop.test.postgresql.tablespace", "sqooptest");
-  static final String USERNAME =
-    System.getProperty("sqoop.test.postgresql.username", "sqooptest");
+    System.getProperty("sqoop.test.postgresql.tablespace", "sqoop");
   static final String PG_BULKLOAD =
     System.getProperty("sqoop.test.postgresql.pg_bulkload", "pg_bulkload");
-  static final String CONNECT_STRING = HOST_URL + DATABASE;
 
   public PGBulkloadManagerManualTest() {
     JobConf conf = new JobConf(getConf());
@@ -104,7 +103,7 @@ public class PGBulkloadManagerManualTest extends TestExport {
 
 
   protected String getUserName() {
-    return USERNAME;
+    return DATABASE_USER;
   }
 
 

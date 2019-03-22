@@ -22,7 +22,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.sqoop.SqoopOptions;
+import org.apache.sqoop.manager.ConnManager;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 /**
@@ -38,18 +43,18 @@ public final class MySQLTestUtils {
   private String userName;
   private String userPass;
 
-  private String mysqlDbNAme;
+  private String mysqlDbName;
   private String mySqlConnectString;
 
   public MySQLTestUtils() {
     hostUrl = System.getProperty(
         "sqoop.test.mysql.connectstring.host_url",
-        "jdbc:mysql://localhost/");
-    userName = System.getProperty("sqoop.test.mysql.username", getCurrentUser());
-    userPass = System.getProperty("sqoop.test.mysql.password");
+        "jdbc:mysql://127.0.0.1:13306/");
+    userName = System.getProperty("sqoop.test.mysql.username", "sqoop");
+    userPass = System.getProperty("sqoop.test.mysql.password", "Sqoop12345");
 
-    mysqlDbNAme = System.getProperty("sqoop.test.mysql.databasename", "sqooptestdb");
-    mySqlConnectString = getHostUrl() + getMysqlDbNAme();
+    mysqlDbName = System.getProperty("sqoop.test.mysql.databasename", "sqoop");
+    mySqlConnectString = getHostUrl() + getMysqlDbName();
   }
 
   public String getHostUrl() {
@@ -64,8 +69,8 @@ public final class MySQLTestUtils {
     return userPass;
   }
 
-  public String getMysqlDbNAme() {
-    return mysqlDbNAme;
+  public String getMysqlDbName() {
+    return mysqlDbName;
   }
 
 
@@ -123,4 +128,16 @@ public final class MySQLTestUtils {
     }
   }
 
+  public void dropTableIfExists(String table, ConnManager manager) throws SQLException {
+    Connection conn = manager.getConnection();
+    PreparedStatement statement = conn.prepareStatement(
+        "DROP TABLE IF EXISTS " + table,
+        ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+    try {
+      statement.executeUpdate();
+      conn.commit();
+    } finally {
+      statement.close();
+    }
+  }
 }
